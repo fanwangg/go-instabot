@@ -10,6 +10,7 @@ import (
 	"os"
 	"strings"
 	"time"
+	"strconv"
 
 	"github.com/spf13/viper"
 	"github.com/tducasse/goinsta"
@@ -285,5 +286,30 @@ func followUser(userInfo response.GetUsernameResponse) {
 		report[line{tag, "follow"}]++
 	} else {
 		log.Println("Already following " + user.Username)
+	}
+}
+
+func autolike() {
+	for _, username := range autolikeList {
+		var userInfo response.GetUsernameResponse
+		err := retry(10, 20*time.Second, func() (err error) {
+			userInfo, err = insta.GetUserByUsername(username)
+			return
+		})
+		check(err)
+
+		var latestFeed response.UserFeedResponse
+		err2 := retry(10, 20*time.Second, func() (err error) {
+			ts := time.Now().Add(time.Duration(-2*864000) * time.Second)
+			fmt.Println("ts:", ts.Unix())
+			latestFeed, err = insta.UserFeed(userInfo.User.ID, "", strconv.Itoa(int(ts.Unix())))
+			return
+		})
+		check(err2)
+
+		for _, feed := range latestFeed.Items{
+			insta.Like(feed.ID)
+			fmt.Println("liked ", feed.ID)
+		}
 	}
 }

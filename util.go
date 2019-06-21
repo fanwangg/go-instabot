@@ -64,6 +64,8 @@ var numCommented int
 // Will hold the tag value
 var tag string
 
+var autolikeList []string
+
 // check will log.Fatal if err is an error
 func check(err error) {
 	if err != nil {
@@ -129,6 +131,8 @@ func getConfig() {
 	tagsList = viper.GetStringMap("tags")
 
 	commentsList = viper.GetStringSlice("comments")
+
+	autolikeList = viper.GetStringSlice("autolikes")
 
 	type Report struct {
 		Tag, Action string
